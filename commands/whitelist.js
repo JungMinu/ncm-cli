@@ -155,23 +155,37 @@ async function whitelist (argv) {
       const failures = []
       let maxSeverity = 0
       let license
+      let hasFailures = false
+
       for (const score of scores) {
-        if (!score.pass) {
-          failures.push(score)
-          if (score.group === 'risk') {
-            let riskSeverity = SEVERITY_RMAP.indexOf(score.severity[0] + score.severity.slice(1).toLowerCase())
-            if (riskSeverity > maxSeverity) maxSeverity = riskSeverity
-          }
+        const severityValue = SEVERITY_RMAP.indexOf(score.severity)
+
+        if (score.group !== 'compliance' &&
+            score.group !== 'security' &&
+            score.group !== 'risk') {
+          continue
         }
-        if (score.name === 'license') license = score
+
+        if (severityValue > maxSeverity) {
+          maxSeverity = severityValue
+        }
+
+        if (score.pass === false) {
+          failures.push(score)
+          hasFailures = true
+        }
+
+        if (score.name === 'license') {
+          license = score
+        }
       }
       report.push({
         name,
-        /* def response is null, replace with the user specified version */
         version: !version ? whitelistData.whitelist[index].version : version,
         published,
         scores,
         license,
+        hasFailures,
         failures,
         maxSeverity
       })
