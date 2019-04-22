@@ -100,7 +100,8 @@ async function signin (argv, email, password) {
         authData = body
       } catch (err) {
         E()
-        E(formatError('Failed Authentication.', err))
+        E(formatError('Failed Authentication.'))
+        E(err)
         E()
       }
     }
